@@ -45,85 +45,74 @@ const CONFIG = {
 };
 
 /* ══════════════════════════════════════════════════════════════════════
-   ESTÍMULOS
+   ESTÍMULOS — sólo políticos, repartidos en 3 MODELOS de 20 fotos c/u.
    ─────────────────────────────────────────────────────────────────────
-   categoria : 'politico' | 'control'
-   identidad : agrupa fotos de la misma persona (evita repeticiones seguidas)
-   emocion   : 'positiva' | 'negativa' | 'neutra'   ← lo que ustedes esperan,
-               NO lo que responde el participante
+   Cada político aporta 4 fotos por modelo (5 políticos × 4 = 20).
+   Dentro de esas 4, la emoción se reparte 2-1-1 y ese "2" va rotando de
+   modelo en modelo, así en la suma de los 3 modelos cada emoción queda
+   representada 4 veces por político (12 fotos por político en total,
+   ninguna foto se repite entre modelos).
+
+   Nombre de archivo esperado: {politico}_{emocion}_{n}.jpg   (n: 1 a 4)
+     ej: milei_positiva_1.jpg, milei_negativa_3.jpg, kicillof_neutra_4.jpg
    Si el archivo no existe, la encuesta muestra un recuadro con el id:
    sirve para probar el flujo antes de tener las fotos finales.
    ══════════════════════════════════════════════════════════════════════ */
-const ESTIMULOS = [
-  // ── Políticos ────────────────────────────────────────────────────────
-  { id:'milei_pos',      archivo:'milei_pos.jpg',      categoria:'politico', identidad:'Milei',     emocion:'positiva' },
-  { id:'milei_neg',      archivo:'milei_neg.jpg',      categoria:'politico', identidad:'Milei',     emocion:'negativa' },
-  { id:'milei_neu',      archivo:'milei_neu.jpg',      categoria:'politico', identidad:'Milei',     emocion:'neutra'   },
-
-  { id:'cristina_pos',   archivo:'cristina_pos.jpg',   categoria:'politico', identidad:'Cristina',  emocion:'positiva' },
-  { id:'cristina_neg',   archivo:'cristina_neg.jpg',   categoria:'politico', identidad:'Cristina',  emocion:'negativa' },
-  { id:'cristina_neu',   archivo:'cristina_neu.jpg',   categoria:'politico', identidad:'Cristina',  emocion:'neutra'   },
-
-  { id:'massa_pos',      archivo:'massa_pos.jpg',      categoria:'politico', identidad:'Massa',     emocion:'positiva' },
-  { id:'massa_neg',      archivo:'massa_neg.jpg',      categoria:'politico', identidad:'Massa',     emocion:'negativa' },
-  { id:'massa_neu',      archivo:'massa_neu.jpg',      categoria:'politico', identidad:'Massa',     emocion:'neutra'   },
-
-  { id:'bullrich_pos',   archivo:'bullrich_pos.jpg',   categoria:'politico', identidad:'Bullrich',  emocion:'positiva' },
-  { id:'bullrich_neg',   archivo:'bullrich_neg.jpg',   categoria:'politico', identidad:'Bullrich',  emocion:'negativa' },
-  { id:'bullrich_neu',   archivo:'bullrich_neu.jpg',   categoria:'politico', identidad:'Bullrich',  emocion:'neutra'   },
-
-  // ── Control KDEF ─────────────────────────────────────────────────────
-  // Reemplazar por los códigos reales que elijan (AF01HAS, AM05ANS, etc.)
-  { id:'AF01HAS', archivo:'AF01HAS.JPG', categoria:'control', identidad:'AF01', emocion:'positiva' },
-  { id:'AF01ANS', archivo:'AF01ANS.JPG', categoria:'control', identidad:'AF01', emocion:'negativa' },
-  { id:'AF01NES', archivo:'AF01NES.JPG', categoria:'control', identidad:'AF01', emocion:'neutra'   },
-
-  { id:'AM05HAS', archivo:'AM05HAS.JPG', categoria:'control', identidad:'AM05', emocion:'positiva' },
-  { id:'AM05ANS', archivo:'AM05ANS.JPG', categoria:'control', identidad:'AM05', emocion:'negativa' },
-  { id:'AM05NES', archivo:'AM05NES.JPG', categoria:'control', identidad:'AM05', emocion:'neutra'   },
-
-  { id:'BF14HAS', archivo:'BF14HAS.JPG', categoria:'control', identidad:'BF14', emocion:'positiva' },
-  { id:'BF14ANS', archivo:'BF14ANS.JPG', categoria:'control', identidad:'BF14', emocion:'negativa' },
-  { id:'BF14NES', archivo:'BF14NES.JPG', categoria:'control', identidad:'BF14', emocion:'neutra'   },
-
-  { id:'BM21HAS', archivo:'BM21HAS.JPG', categoria:'control', identidad:'BM21', emocion:'positiva' },
-  { id:'BM21ANS', archivo:'BM21ANS.JPG', categoria:'control', identidad:'BM21', emocion:'negativa' },
-  { id:'BM21NES', archivo:'BM21NES.JPG', categoria:'control', identidad:'BM21', emocion:'neutra'   },
+const POLITICOS_ESTIM = [
+  { clave:'milei',     nombre:'Javier Milei' },
+  { clave:'bullrich',  nombre:'Patricia Bullrich' },
+  { clave:'cristina',  nombre:'Cristina Fernández de Kirchner' },
+  { clave:'massa',     nombre:'Sergio Massa' },
+  { clave:'kicillof',  nombre:'Axel Kicillof' },
 ];
 
+/* Modelo asignado a cada una de las 4 fotos (n=1..4) de cada emoción.
+   El patrón es el mismo para todos los políticos: sólo cambia qué
+   emoción tiene el "2" en cada modelo.                                   */
+const MODELO_POR_SLOT = {
+  positiva: [1, 1, 2, 3],
+  negativa: [1, 2, 2, 3],
+  neutra:   [1, 2, 3, 3],
+};
+
+const ESTIMULOS = POLITICOS_ESTIM.flatMap(p =>
+  Object.keys(MODELO_POR_SLOT).flatMap(emocion =>
+    MODELO_POR_SLOT[emocion].map((modelo, i) => {
+      const n = i + 1;
+      return {
+        id:        p.clave + '_' + emocion + '_' + n,
+        archivo:   p.clave + '_' + emocion + '_' + n + '.jpg',
+        categoria: 'politico',
+        identidad: p.nombre,
+        emocion,
+        modelo,
+      };
+    })
+  )
+);
+
+const MODELOS_DISPONIBLES = [1, 2, 3];
+const estimulosDeModelo = (m) => ESTIMULOS.filter(e => e.modelo === m);
+
 /* ══════════════════════════════════════════════════════════════════════
-   LISTA ACTIVA
-   En modo de prueba toma N_PRUEBA fotos repartidas entre políticos y
-   controles, para que se vean las dos categorías. ESTIMULOS queda intacto.
+   LISTA ACTIVA POR MODELO
+   En modo de prueba, cada modelo se achica a N_PRUEBA fotos (en vez de
+   20) para poder probar el flujo de "elegir modelo → responder →
+   ¿seguir?" completo en poco tiempo. ESTIMULOS queda intacto.
    ══════════════════════════════════════════════════════════════════════ */
-const ESTIMULOS_ACTIVOS = (() => {
-  if (!CONFIG.MODO_PRUEBA) return ESTIMULOS;
+function estimulosActivosDeModelo(m){
+  const lista = estimulosDeModelo(m);
+  if (!CONFIG.MODO_PRUEBA) return lista;
+  return lista.slice(0, Math.max(1, CONFIG.N_PRUEBA));
+}
 
-  const n    = Math.max(1, CONFIG.N_PRUEBA);
-  const pol  = ESTIMULOS.filter(e => e.categoria === 'politico');
-  const ctrl = ESTIMULOS.filter(e => e.categoria === 'control');
-  const sel  = [];
-
-  // alterna político / control hasta llegar a n
-  for (let i = 0; sel.length < n && (i < pol.length || i < ctrl.length); i++){
-    if (pol[i]  && sel.length < n) sel.push(pol[i]);
-    if (ctrl[i] && sel.length < n) sel.push(ctrl[i]);
-  }
-  return sel.length ? sel : ESTIMULOS.slice(0, n);
-})();
-
-/* Ítems que se repiten para medir consistencia intra-sujeto.
-   Dejar [] si prefieren no alargar la encuesta.                            */
-const REPETIR = ['milei_neu', 'AF01NES'];
-
-/* Sólo las repeticiones que existan en la lista activa. En modo de prueba
-   se apagan: con dos fotos no tiene sentido medir consistencia.          */
-const REPETIR_ACTIVOS = CONFIG.MODO_PRUEBA
-  ? []
-  : REPETIR.filter(id => ESTIMULOS_ACTIVOS.some(e => e.id === id));
+/* Ítems que se repiten para medir consistencia intra-sujeto (dentro del
+   modelo que le tocó a la persona). Se buscan por id exacto; dejar []
+   si prefieren no alargar la encuesta.                                    */
+const REPETIR = ['milei_neutra_1'];
 
 /* Políticos para el termómetro de sentimiento del cierre */
-const POLITICOS = ['Javier Milei', 'Cristina Fernández de Kirchner', 'Sergio Massa', 'Patricia Bullrich'];
+const POLITICOS = POLITICOS_ESTIM.map(p => p.nombre);
 
 /* Partidos: el orden se aleatoriza salvo "Otro" y "Ninguno" */
 const PARTIDOS = [
@@ -507,7 +496,7 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
       </div>
       <div>
         <dt>Con política</dt>
-        <dd>Algunas de las caras son de figuras políticas argentinas y vamos a preguntarte por tu orientación política.</dd>
+        <dd>Todas las caras que vas a ver son de figuras políticas argentinas, y vamos a preguntarte por tu orientación política.</dd>
       </div>
       <div>
         <dt>Sin respuestas correctas</dt>
@@ -598,8 +587,9 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
   <div class="tarjeta">
     <p class="eyebrow">Paso 3 de 3</p>
     <h2>Cómo funciona la tarea</h2>
-    <p>Vas a ver <strong id="n-total">26</strong> fotografías, una por vez, con tres preguntas debajo de cada una.</p>
+    <p>Vas a ver <strong id="n-total">20</strong> fotografías, una por vez, con tres preguntas debajo de cada una.</p>
     <p>Respondé con la primera impresión, sin pensarlo demasiado.</p>
+    <p>Al terminar te vamos a preguntar si querés seguir con otro grupo de fotos distinto. Podés parar cuando quieras.</p>
 
     <div class="acciones">
       <button class="btn-fantasma" data-atras="p-politica">Atrás</button>
@@ -632,6 +622,22 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
   </div>
 </section>
 
+<!-- ═══════════ 5b. ¿SEGUIMOS? ═══════════ -->
+<section class="pantalla" id="p-continuar">
+  <div class="tarjeta">
+    <p class="eyebrow">Grupo completado</p>
+    <h2>Terminaste este grupo de fotos</h2>
+    <p class="lead" id="continuar-resumen">Ya respondiste un grupo de fotos.</p>
+    <p>Podés seguir con otro grupo de fotos distinto (nunca vas a ver dos veces el mismo grupo), o terminar acá — las dos opciones son igual de útiles para la investigación.</p>
+
+    <div class="aviso" id="av-continuar"></div>
+    <div class="acciones">
+      <button class="btn-fantasma" id="btn-continuar-no">No, terminar acá</button>
+      <div class="der"><button class="btn-primario" id="btn-continuar-si">Sí, seguir con otro grupo</button></div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════ 6. TERMÓMETRO ═══════════ -->
 <section class="pantalla" id="p-termo">
   <div class="tarjeta">
@@ -649,7 +655,6 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
 
     <div class="aviso" id="av-termo"></div>
     <div class="acciones">
-      <button class="btn-fantasma" id="btn-termo-atras">Atrás</button>
       <div class="der"><button class="btn-primario" id="btn-termo">Enviar respuestas</button></div>
     </div>
   </div>
@@ -695,9 +700,29 @@ const S = {
   sesion: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
   t0: Date.now(),
   demo: {}, politica: {},
-  respuestas: [], termometro: {}, comentario: '',
+  modeloActual: null,
+  modelosCompletados: [],   // modelos ya posteados con éxito en esta visita
+  todasLasValoraciones: [], // acumulado de todos los modelos ya posteados (respaldo de descarga)
+  respuestas: [],            // respuestas del modelo EN CURSO
+  termometro: {}, comentario: '',
   trials: [], i: 0, tTrial: 0, token: 0,
+  accionReintentar: null,
 };
+
+/* ══════════════════════ NO REPETIR MODELO (localStorage) ══════════════════════
+   Best-effort: identifica el navegador/dispositivo, no a la persona. Si
+   borra el localStorage o usa otro dispositivo, podría volver a tocarle
+   un modelo ya hecho — es una limitación conocida de una encuesta anónima.  */
+const LS_MODELOS = 'labo7_modelos_hechos' + (CONFIG.MODO_PRUEBA ? '_prueba' : '');
+function modelosHechosLS(){
+  try { return JSON.parse(localStorage.getItem(LS_MODELOS) || '[]'); }
+  catch(e){ return []; }
+}
+function marcarModeloHechoLS(m){
+  const actuales = modelosHechosLS();
+  if (!actuales.includes(m)) actuales.push(m);
+  try { localStorage.setItem(LS_MODELOS, JSON.stringify(actuales)); } catch(e){}
+}
 
 const $  = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -711,8 +736,19 @@ if (CONFIG.MODO_PRUEBA){
   const f = $('#franja-prueba');
   f.className = 'franja';
   f.style.display = 'block';
-  f.textContent = 'MODO DE PRUEBA · ' + ESTIMULOS_ACTIVOS.length +
+  f.textContent = 'MODO DE PRUEBA · cada grupo se achica a ' + Math.max(1, CONFIG.N_PRUEBA) +
                   ' fotos · los envíos se guardan marcados como prueba';
+}
+
+/* Si este navegador ya completó los 3 modelos, no tiene sentido dejar
+   arrancar de nuevo: se avisa directamente en la pantalla de consentimiento. */
+if (modelosHechosLS().length >= MODELOS_DISPONIBLES.length){
+  const tarjeta = $('#p-consent .tarjeta');
+  tarjeta.innerHTML =
+    '<p class="eyebrow">Gracias</p>' +
+    '<h1>Ya respondiste todos los grupos disponibles.</h1>' +
+    '<p class="lead">Desde este dispositivo ya completaste los ' + MODELOS_DISPONIBLES.length +
+    ' grupos de fotos de esta encuesta. No hace falta que respondas de nuevo — ¡gracias por tu tiempo!</p>';
 }
 
 /* ══════════════════════ UTILIDADES ══════════════════════ */
@@ -726,14 +762,15 @@ function mezclar(a){
 }
 
 const ROTULOS = {
-  'p-consent':  'Consentimiento',
-  'p-demo':     'Paso 1 — Sobre vos',
-  'p-politica': 'Paso 2 — Política',
-  'p-instru':   'Paso 3 — La tarea',
-  'p-trial':    'Encuesta de rostros',
-  'p-termo':    'Última pregunta',
-  'p-fin':      'Fin',
-  'p-error':    'Error',
+  'p-consent':   'Consentimiento',
+  'p-demo':      'Paso 1 — Sobre vos',
+  'p-politica':  'Paso 2 — Política',
+  'p-instru':    'Paso 3 — La tarea',
+  'p-trial':     'Encuesta de rostros',
+  'p-continuar': 'Grupo completado',
+  'p-termo':     'Última pregunta',
+  'p-fin':       'Fin',
+  'p-error':     'Error',
 };
 
 function irA(id){
@@ -904,7 +941,7 @@ ORDEN_PARTIDOS.forEach(p => {
   $('#partidos').append(inp, lab);
 });
 
-$('#btn-politica').addEventListener('click', () => {
+$('#btn-politica').addEventListener('click', async () => {
   const ideo = valorDe('ideologia'), inte = valorDe('interes');
   const par  = document.querySelector('input[name="partido"]:checked');
   if (!ideo || !inte || !par){ $('#av-politica').textContent = 'Te falta responder alguna de las tres preguntas.'; return; }
@@ -913,6 +950,18 @@ $('#btn-politica').addEventListener('click', () => {
     ideologia: ideo, interes_politico: inte, partido: par.value,
     orden_partidos: ORDEN_PARTIDOS.map(p => p.valor).join(','),
   };
+
+  const btn = $('#btn-politica');
+  btn.disabled = true; btn.textContent = 'Preparando…';
+  const m = await elegirModelo();
+  btn.disabled = false; btn.textContent = 'Continuar';
+
+  if (m === null){
+    // este navegador ya hizo los 3 modelos entre que cargó la página y llegó acá
+    progreso(94); irA('p-termo');
+    return;
+  }
+  await iniciarModelo(m);
   progreso(24); irA('p-instru');
 });
 
@@ -920,9 +969,9 @@ $('#btn-politica').addEventListener('click', () => {
    Restricciones: dos fotos seguidas nunca son de la misma persona, y
    un ítem repetido queda a >= SEPARACION posiciones de su original.
    Con listas cortas la separación se achica para que siga siendo posible. */
-function armarTrials(intentos = 3000){
-  const base  = ESTIMULOS_ACTIVOS.map(e => ({ ...e, repeticion:false }));
-  const reps  = REPETIR_ACTIVOS.map(id => ESTIMULOS_ACTIVOS.find(e => e.id === id))
+function armarTrials(activos, repsIds, intentos = 3000){
+  const base  = activos.map(e => ({ ...e, repeticion:false }));
+  const reps  = repsIds.map(id => activos.find(e => e.id === id))
                        .filter(Boolean).map(e => ({ ...e, repeticion:true }));
   const todos = base.concat(reps);
   const sep   = Math.min(6, Math.floor(todos.length / 2));
@@ -947,8 +996,62 @@ function armarTrials(intentos = 3000){
   console.warn('Restricciones de orden imposibles con estos estímulos; se usa orden aleatorio simple.');
   return mezclar(todos);
 }
-S.trials = armarTrials();
-$('#n-total').textContent = S.trials.length;
+
+/* ══════════════════════ ELEGIR EL MODELO CON MENOS RESPUESTAS ══════════════════════
+   Se consulta Supabase (tabla "valoraciones", columna "modelo") cuántas
+   filas hay por modelo, y se elige el que menos tenga entre los que esta
+   persona todavía no hizo. Si falla la consulta (sin conexión, tabla sin
+   la columna todavía, etc.) se elige al azar entre los elegibles en vez
+   de trabar la encuesta.                                                  */
+function headersConteo(){
+  const k = CONFIG.SUPABASE_ANON_KEY;
+  const h = { 'apikey': k, 'Prefer': 'count=exact' };
+  if (k && k.startsWith('eyJ')) h['Authorization'] = 'Bearer ' + k;
+  return h;
+}
+
+async function contarRespuestasModelo(m){
+  try {
+    // sólo cuenta respuestas del mismo "carril": si estamos en modo de
+    // prueba, sólo mira filas de prueba, y viceversa. Así los datos de
+    // prueba nunca pesan en el balanceo real ni al revés.
+    const r = await fetch(
+      CONFIG.SUPABASE_URL + '/rest/v1/valoraciones?modelo=eq.' + m +
+        '&modo_prueba=eq.' + (!!CONFIG.MODO_PRUEBA) + '&select=id&limit=1',
+      { method:'GET', headers: headersConteo() }
+    );
+    const rango = r.headers.get('content-range'); // formato "0-0/123"
+    if (!rango) return 0;
+    const total = rango.split('/')[1];
+    return (!total || total === '*') ? 0 : Number(total);
+  } catch(e){
+    console.warn('No se pudo contar respuestas del modelo ' + m, e);
+    return 0;
+  }
+}
+
+async function elegirModelo(){
+  const hechos    = new Set(modelosHechosLS());
+  const elegibles = MODELOS_DISPONIBLES.filter(m => !hechos.has(m));
+  if (elegibles.length === 0) return null;
+  if (elegibles.length === 1) return elegibles[0];
+
+  const conteos = await Promise.all(elegibles.map(contarRespuestasModelo));
+  const min = Math.min(...conteos);
+  const candidatos = elegibles.filter((m, i) => conteos[i] === min);
+  return candidatos[Math.floor(Math.random() * candidatos.length)];
+}
+
+/* Prepara los trials del modelo m y deja todo listo para pintarTrial(). */
+async function iniciarModelo(m){
+  S.modeloActual = m;
+  const activos = estimulosActivosDeModelo(m);
+  const repsIds = CONFIG.MODO_PRUEBA ? [] : REPETIR.filter(id => activos.some(e => e.id === id));
+  S.trials = armarTrials(activos, repsIds);
+  S.respuestas = [];
+  S.i = 0;
+  $('#n-total').textContent = S.trials.length;
+}
 
 $('#btn-instru').addEventListener('click', () => {
   S.i = 0;
@@ -1032,6 +1135,8 @@ function siguienteTrial(){
   const est = S.trials[S.i];
   S.respuestas[S.i] = {
     sesion_id: S.sesion,
+    modelo: S.modeloActual,
+    modo_prueba: !!CONFIG.MODO_PRUEBA,
     orden: S.i + 1,
     estimulo_id: est.id,
     categoria: est.categoria,
@@ -1047,8 +1152,9 @@ function siguienteTrial(){
 
   if (S.i >= S.trials.length){
     $('#meta-cont').textContent = '';
-    progreso(94);
-    irA('p-termo');
+    $('#btn-trial').disabled = true;
+    $('#btn-trial').textContent = 'Guardando…';
+    finalizarModelo();
     return;
   }
   pintarTrial(S.trials[S.i], S.respuestas[S.i]);
@@ -1063,9 +1169,56 @@ function trialAtras(){
 $('#btn-trial').addEventListener('click', siguienteTrial);
 $('#btn-trial-atras').addEventListener('click', trialAtras);
 
-$('#btn-termo-atras').addEventListener('click', () => {
-  S.i = S.trials.length - 1;
-  pintarTrial(S.trials[S.i], S.respuestas[S.i]);
+/* ══════════════════════ FIN DE UN MODELO ══════════════════════
+   Postea a Supabase las 20 (o N_PRUEBA) valoraciones del modelo recién
+   terminado, lo marca como hecho en localStorage, y decide si ofrece
+   seguir con otro modelo o pasar directo al termómetro.                  */
+async function finalizarModelo(){
+  const lote = S.respuestas.filter(Boolean);
+  S.accionReintentar = finalizarModelo;
+  try {
+    if (lote.length) await postear('valoraciones', lote);
+  } catch(err){
+    console.error(err);
+    $('#detalle-error').textContent = String(err.message || err);
+    irA('p-error');
+    return;
+  }
+
+  S.todasLasValoraciones = S.todasLasValoraciones.concat(lote);
+  marcarModeloHechoLS(S.modeloActual);
+  if (!S.modelosCompletados.includes(S.modeloActual)) S.modelosCompletados.push(S.modeloActual);
+  S.respuestas = [];
+
+  if (modelosHechosLS().length >= MODELOS_DISPONIBLES.length){
+    progreso(94);
+    irA('p-termo');
+    return;
+  }
+
+  $('#continuar-resumen').textContent =
+    'Ya respondiste ' + S.modelosCompletados.length + ' de ' + MODELOS_DISPONIBLES.length + ' grupos de fotos posibles.';
+  progreso(90);
+  irA('p-continuar');
+}
+
+$('#btn-continuar-no').addEventListener('click', () => {
+  progreso(94);
+  irA('p-termo');
+});
+
+$('#btn-continuar-si').addEventListener('click', async () => {
+  const btn = $('#btn-continuar-si');
+  btn.disabled = true; btn.textContent = 'Buscando el próximo grupo…';
+  const m = await elegirModelo();
+  btn.disabled = false; btn.textContent = 'Sí, seguir con otro grupo';
+
+  if (m === null){
+    progreso(94); irA('p-termo');
+    return;
+  }
+  await iniciarModelo(m);
+  pintarTrial(S.trials[0], null);
   irA('p-trial');
 });
 
@@ -1122,30 +1275,32 @@ async function postear(tabla, payload){
   if (!r.ok) throw new Error(tabla + ' → ' + r.status + ' ' + (await r.text()).slice(0, 300));
 }
 
-function paquete(){
+/* Las valoraciones de cada modelo ya se postearon en finalizarModelo().
+   Acá sólo falta la fila-resumen del participante (demográficos,
+   política, termómetro). n_trials/modelos_respondidos quedan de
+   registro de cuánto llegó a responder en total.                        */
+function paqueteParticipante(){
   return {
-    participante: {
-      sesion_id: S.sesion,
-      edad: S.demo.edad, genero: S.demo.genero, educacion: S.demo.educacion,
-      ideologia: S.politica.ideologia, interes_politico: S.politica.interes_politico,
-      partido: S.politica.partido, orden_partidos: S.politica.orden_partidos,
-      termometro: S.termometro, comentario: S.comentario,
-      duracion_ms: Date.now() - S.t0, n_trials: S.respuestas.filter(Boolean).length,
-      modo_prueba: !!CONFIG.MODO_PRUEBA,
-      ancho_pantalla: window.innerWidth,
-      user_agent: navigator.userAgent.slice(0, 250),
-    },
-    valoraciones: S.respuestas.filter(Boolean),
+    sesion_id: S.sesion,
+    edad: S.demo.edad, genero: S.demo.genero, educacion: S.demo.educacion,
+    ideologia: S.politica.ideologia, interes_politico: S.politica.interes_politico,
+    partido: S.politica.partido, orden_partidos: S.politica.orden_partidos,
+    termometro: S.termometro, comentario: S.comentario,
+    duracion_ms: Date.now() - S.t0,
+    n_trials: S.todasLasValoraciones.length,
+    modelos_respondidos: S.modelosCompletados.join(','),
+    modo_prueba: !!CONFIG.MODO_PRUEBA,
+    ancho_pantalla: window.innerWidth,
+    user_agent: navigator.userAgent.slice(0, 250),
   };
 }
 
 async function enviar(){
   const btn = $('#btn-termo');
   btn.disabled = true; btn.textContent = 'Enviando…';
+  S.accionReintentar = enviar;
   try {
-    const p = paquete();
-    await postear('participantes', p.participante);
-    await postear('valoraciones',  p.valoraciones);
+    await postear('participantes', paqueteParticipante());
     progreso(100);
     $('#cod-fin').textContent = 'ID de sesión: ' + S.sesion;
     irA('p-fin');
@@ -1158,9 +1313,15 @@ async function enviar(){
   }
 }
 
-$('#btn-reintentar').addEventListener('click', enviar);
+$('#btn-reintentar').addEventListener('click', () => {
+  if (S.accionReintentar) S.accionReintentar();
+});
 $('#btn-descargar').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(paquete(), null, 2)], { type:'application/json' });
+  const datos = {
+    participante: paqueteParticipante(),
+    valoraciones: S.todasLasValoraciones.concat(S.respuestas.filter(Boolean)),
+  };
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'respuestas_' + S.sesion.slice(0, 8) + '.json';
