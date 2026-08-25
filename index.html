@@ -62,7 +62,7 @@ const CONFIG = {
 const POLITICOS_ESTIM = [
   { clave:'milei',     nombre:'Javier Milei' },
   { clave:'bullrich',  nombre:'Patricia Bullrich' },
-  { clave:'cristina',  nombre:'Cristina Fernández de Kirchner' },
+  { clave:'kirchner',  nombre:'Cristina Fernández de Kirchner' },
   { clave:'massa',     nombre:'Sergio Massa' },
   { clave:'kicillof',  nombre:'Axel Kicillof' },
 ];
@@ -129,7 +129,7 @@ function estimulosActivosDeModelo(m){
 /* Ítems que se repiten para medir consistencia intra-sujeto (dentro del
    modelo que le tocó a la persona). Se buscan por id exacto; dejar []
    si prefieren no alargar la encuesta.                                    */
-const REPETIR = ['milei_neutra_1'];
+const REPETIR = [];
 
 /* Políticos para el termómetro de sentimiento del cierre */
 const POLITICOS = POLITICOS_ESTIM.map(p => p.nombre);
