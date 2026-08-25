@@ -53,9 +53,9 @@ const CONFIG = {
    representada 4 veces por político (12 fotos por político en total,
    ninguna foto se repite entre modelos).
 
-   Nombre de archivo esperado: {apellido}_{3 primeras letras emoción}_{n}.jpg
+   Nombre de archivo esperado: {apellido}_{3 primeras letras emoción}_{n}.png
      positiva → pos · negativa → neg · neutra → neu   (n: 1 a 4)
-     ej: milei_pos_1.jpg, milei_neg_3.jpg, kicillof_neu_4.jpg
+     ej: milei_pos_1.png, milei_neg_3.png, kicillof_neu_4.png
    Si el archivo no existe, la encuesta muestra un recuadro con el id:
    sirve para probar el flujo antes de tener las fotos finales.
    ══════════════════════════════════════════════════════════════════════ */
@@ -86,7 +86,7 @@ const ESTIMULOS = POLITICOS_ESTIM.flatMap(p =>
       const n = i + 1;
       return {
         id:        p.clave + '_' + emocion + '_' + n,
-        archivo:   p.clave + '_' + EMOCION_ABREV[emocion] + '_' + n + '.jpg',
+        archivo:   p.clave + '_' + EMOCION_ABREV[emocion] + '_' + n + '.png',
         categoria: 'politico',
         identidad: p.nombre,
         emocion,
