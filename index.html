@@ -53,8 +53,9 @@ const CONFIG = {
    representada 4 veces por político (12 fotos por político en total,
    ninguna foto se repite entre modelos).
 
-   Nombre de archivo esperado: {politico}_{emocion}_{n}.jpg   (n: 1 a 4)
-     ej: milei_positiva_1.jpg, milei_negativa_3.jpg, kicillof_neutra_4.jpg
+   Nombre de archivo esperado: {apellido}_{3 primeras letras emoción}_{n}.jpg
+     positiva → pos · negativa → neg · neutra → neu   (n: 1 a 4)
+     ej: milei_pos_1.jpg, milei_neg_3.jpg, kicillof_neu_4.jpg
    Si el archivo no existe, la encuesta muestra un recuadro con el id:
    sirve para probar el flujo antes de tener las fotos finales.
    ══════════════════════════════════════════════════════════════════════ */
@@ -75,13 +76,17 @@ const MODELO_POR_SLOT = {
   neutra:   [1, 2, 3, 3],
 };
 
+/* Sólo para armar el nombre de archivo (las 3 primeras letras de la
+   emoción); el resto del código sigue usando la palabra completa.        */
+const EMOCION_ABREV = { positiva:'pos', negativa:'neg', neutra:'neu' };
+
 const ESTIMULOS = POLITICOS_ESTIM.flatMap(p =>
   Object.keys(MODELO_POR_SLOT).flatMap(emocion =>
     MODELO_POR_SLOT[emocion].map((modelo, i) => {
       const n = i + 1;
       return {
         id:        p.clave + '_' + emocion + '_' + n,
-        archivo:   p.clave + '_' + emocion + '_' + n + '.jpg',
+        archivo:   p.clave + '_' + EMOCION_ABREV[emocion] + '_' + n + '.jpg',
         categoria: 'politico',
         identidad: p.nombre,
         emocion,
@@ -103,7 +108,22 @@ const estimulosDeModelo = (m) => ESTIMULOS.filter(e => e.modelo === m);
 function estimulosActivosDeModelo(m){
   const lista = estimulosDeModelo(m);
   if (!CONFIG.MODO_PRUEBA) return lista;
-  return lista.slice(0, Math.max(1, CONFIG.N_PRUEBA));
+
+  // Tomar 1 foto de cada político distinto (hasta N_PRUEBA) en vez de las
+  // primeras N de la lista: como la lista está agrupada por político y
+  // Milei va primero, un slice(0,n) simple siempre daba sólo fotos de
+  // Milei. Así el modo de prueba muestra variedad real.
+  const n = Math.max(1, CONFIG.N_PRUEBA);
+  const vistos = new Set();
+  const variados = [];
+  for (const e of lista){
+    if (!vistos.has(e.identidad)){
+      vistos.add(e.identidad);
+      variados.push(e);
+      if (variados.length >= n) break;
+    }
+  }
+  return variados.length ? variados : lista.slice(0, n);
 }
 
 /* Ítems que se repiten para medir consistencia intra-sujeto (dentro del
