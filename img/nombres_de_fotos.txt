@@ -1,0 +1,3 @@
+Los nombres de las fotos en esta carpeta tienen que ser: {politico}_{emocion}_{n}.jpg
+
+Los políticos son milei, bullrich, cristina, massa, kicillof, y emocion es positiva, negativa o neutra. Por ejemplo: milei_positiva_1.jpg hasta milei_positiva_4.jpg, milei_negativa_1.jpg..._4.jpg, milei_neutra_1.jpg..._4.jpg
