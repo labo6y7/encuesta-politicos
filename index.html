@@ -42,6 +42,11 @@ const CONFIG = {
   /* ---- Contacto (aparece en el consentimiento) ------------------------- */
   LAB:      'Laboratorio de Neurociencia de la UTDT',
   CONTACTO: 'labo6y7ditella@gmail.com',
+
+  /* ---- "Hacé click acá para ver más información" ------------------------
+     URL del texto ampliado de consentimiento (PDF, Drive, página del labo).
+     Si queda vacío ('') el enlace no se muestra.                          */
+  URL_MAS_INFO: '',
 };
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -159,6 +164,7 @@ const PARTIDOS_FIJOS = [
 
   --tinta:      #10151F;
   --tinta-med:  #414C59;
+  --tinta-sub:  #313B47;   /* subtítulos: un paso más oscuro que --tinta-med */
   --tinta-suave:#79838F;
   --regla:      #D4DAE2;
   --regla-fina: #E7EBF0;
@@ -190,13 +196,15 @@ body{
   letter-spacing:.08em; text-align:center; padding:7px 14px;
 }
 body.prueba .top{top:31px;}
-body.prueba main{padding-top:104px;}
+body.prueba main{padding-top:72px;}
 @media(max-width:540px){
   .franja{font-size:10px; padding:6px 10px; letter-spacing:.05em;}
-  body.prueba main{padding-top:80px;}
+  body.prueba main{padding-top:58px;}
 }
 
-/* ══════════════════════ CABECERA FIJA ══════════════════════ */
+/* ══════════════════════ CABECERA FIJA ══════════════════════
+   Sólo la barra de progreso: el rótulo de pantalla y el contador se
+   sacaron porque duplicaban lo que ya dice cada tarjeta.            */
 .top{
   position:fixed; inset:0 0 auto 0; z-index:60;
   background:color-mix(in srgb, var(--papel) 86%, transparent);
@@ -208,16 +216,9 @@ body.prueba main{padding-top:104px;}
   display:block; height:100%; width:0%;
   background:var(--tinta); transition:width .5s cubic-bezier(.4,0,.2,1);
 }
-.top .meta{
-  max-width:680px; margin:0 auto; padding:9px 22px;
-  display:flex; justify-content:space-between; align-items:center;
-  font-family:'IBM Plex Mono',monospace; font-size:11px;
-  letter-spacing:.07em; color:var(--tinta-suave);
-}
-.top .meta .paso{text-transform:uppercase;}
 
-main{max-width:680px; margin:0 auto; padding:74px 22px 80px;}
-@media(max-width:540px){ main{padding:52px 12px 56px;} .top .meta{padding:8px 14px;} }
+main{max-width:680px; margin:0 auto; padding:42px 22px 80px;}
+@media(max-width:540px){ main{padding:28px 12px 56px;} }
 
 .pantalla{display:none;}
 .pantalla.activa{display:block; animation:entra .38s cubic-bezier(.2,.75,.3,1);}
@@ -239,9 +240,9 @@ main{max-width:680px; margin:0 auto; padding:74px 22px 80px;}
 
 /* ══════════════════════ TIPOGRAFÍA ══════════════════════ */
 .eyebrow{
-  font-family:'IBM Plex Mono',monospace; font-size:10.5px;
-  letter-spacing:.16em; text-transform:uppercase;
-  color:var(--tinta-suave); margin:0 0 16px;
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+  letter-spacing:.15em; text-transform:uppercase;
+  color:var(--tinta-med); margin:0 0 16px;
 }
 .eyebrow.linea{
   display:flex; justify-content:space-between; align-items:center;
@@ -265,8 +266,16 @@ h2{
 p{margin:0 0 15px; color:var(--tinta-med);}
 p.lead{font-size:17.5px; line-height:1.5; color:var(--tinta);}
 p:last-child{margin-bottom:0;}
-.nota{font-size:13px; color:var(--tinta-suave); line-height:1.5;}
+.nota{font-size:14.5px; color:var(--tinta-sub); line-height:1.55;}
+.nota.tenue{color:var(--tinta-suave);}
 em{font-style:italic;}
+a.enlace{
+  color:var(--tinta); text-decoration:underline;
+  text-underline-offset:3px; text-decoration-thickness:1px;
+  text-decoration-color:var(--regla);
+}
+a.enlace:hover{text-decoration-color:var(--tinta);}
+a.enlace:focus-visible{outline:2px solid var(--tinta); outline-offset:3px; border-radius:3px;}
 strong{font-weight:600; color:var(--tinta);}
 .regla{height:1px; background:var(--regla-fina); margin:28px 0;}
 
@@ -279,57 +288,61 @@ strong{font-weight:600; color:var(--tinta);}
   padding:13px 0; border-bottom:1px solid var(--regla-fina);
 }
 .ficha dt{
-  font-family:'IBM Plex Mono',monospace; font-size:10.5px;
-  letter-spacing:.11em; text-transform:uppercase;
-  color:var(--tinta-suave); padding-top:3px;
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--tinta-med); padding-top:3px;
 }
-.ficha dd{margin:0; font-size:14.5px; line-height:1.5; color:var(--tinta-med);}
+.ficha dd{margin:0; font-size:15px; line-height:1.55; color:var(--tinta-med);}
 @media(max-width:540px){
   .ficha div{grid-template-columns:1fr; gap:3px; padding:12px 0;}
 }
 
-/* ══════════════════════ ESCALA DE 7 CÍRCULOS (sin color) ══════════════════════ */
-.pregunta{margin:0 0 30px;}
+/* ══════════════════════ PREGUNTAS ══════════════════════ */
+.pregunta{margin:0 0 34px;}
 .pregunta:last-child{margin-bottom:0;}
-.enunciado{font-size:16.5px; font-weight:500; color:var(--tinta); margin:0 0 3px;}
-.aclaracion{font-size:13.5px; color:var(--tinta-suave); margin:0 0 18px; line-height:1.45;}
+.enunciado{font-size:16.5px; font-weight:500; color:var(--tinta); margin:0 0 4px;}
+.aclaracion{font-size:15px; color:var(--tinta-sub); margin:0 0 18px; line-height:1.5;}
 
-.escala{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:14px;}
-.polo{font-size:12.5px; font-weight:500; line-height:1.25; color:var(--tinta-med); max-width:80px;}
-.polo.izq{text-align:right;}
-.polo.der{text-align:left;}
-
-.circulos{
-  position:relative; display:flex; align-items:center;
-  justify-content:space-between; padding:5px 0;
+/* ══════════════════════ ESCALA NUMÉRICA ══════════════════════
+   Formato único de todas las escalas de la encuesta: números arriba,
+   círculo debajo y etiqueta verbal sólo en los dos extremos. La
+   cantidad de puntos (0–7, 0–10) la fija el JS por pregunta.        */
+.numerica{display:grid; grid-template-columns:repeat(11,1fr); gap:2px;}
+.numerica input{position:absolute; opacity:0; width:1px; height:1px; pointer-events:none;}
+.numerica label{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:9px 0 10px; cursor:pointer; border-radius:9px;
+  border:1.5px solid transparent; background:var(--tarjeta);
+  font-family:'IBM Plex Mono',monospace; font-size:13px;
+  color:var(--tinta-med); transition:all .15s ease;
 }
-.circulos::before{
-  content:''; position:absolute; left:5%; right:5%; top:50%;
-  height:1px; background:var(--regla-fina); z-index:0;
+.numerica label .punto{
+  width:20px; height:20px; border-radius:50%; flex:none;
+  border:1.7px solid var(--g3); background:var(--tarjeta);
+  transition:all .15s ease;
 }
-.circulos input{position:absolute; opacity:0; width:1px; height:1px; pointer-events:none;}
-.circulos label{
-  position:relative; z-index:1; display:block;
-  width:var(--d); height:var(--d); border-radius:50%;
-  border:1.7px solid var(--c); background:var(--tarjeta);
-  cursor:pointer;
-  transition:background .15s ease, border-color .15s ease, box-shadow .15s ease;
+.numerica label:hover{background:var(--papel-hondo);}
+.numerica label:hover .punto{border-color:var(--g1);}
+.numerica input:focus-visible + label{outline:2px solid var(--tinta); outline-offset:2px;}
+.numerica input:checked + label{border-color:var(--tinta); background:#FAFBFC; color:var(--tinta);}
+.numerica input:checked + label .punto{
+  background:var(--tinta); border-color:var(--tinta); box-shadow:inset 0 0 0 4px #fff;
 }
-.circulos label:hover{ background:var(--papel-hondo); border-color:var(--g1); }
-.circulos input:focus-visible + label{outline:2px solid var(--tinta); outline-offset:4px;}
-.circulos input:checked + label{
-  background:var(--tinta); border-color:var(--tinta);
-  box-shadow:0 0 0 4px rgba(16,21,31,.11);
+.numerica-extremos{
+  display:flex; justify-content:space-between; gap:12px;
+  margin-top:10px; font-size:14px; font-weight:500; color:var(--tinta-med);
 }
-.polos-movil{display:none;}
-@media(max-width:560px){
-  .escala{grid-template-columns:1fr; gap:5px;}
-  .polo{display:none;}
-  .polos-movil{
-    display:flex; justify-content:space-between; gap:12px;
-    font-size:12px; font-weight:500; color:var(--tinta-med); margin-top:4px;
-  }
-  .polos-movil span:last-child{text-align:right;}
+.numerica-extremos span{max-width:47%;}
+.numerica-extremos span:last-child{text-align:right;}
+.numerica-extremos.con-medio{display:grid; grid-template-columns:1fr auto 1fr; align-items:start;}
+.numerica-extremos.con-medio span{max-width:none;}
+.numerica-extremos.con-medio span:nth-child(2){text-align:center;}
+@media(max-width:520px){
+  .numerica{gap:1px;}
+  .numerica label{font-size:11.5px; gap:6px; padding:7px 0 8px; min-height:46px; justify-content:center;}
+  .numerica label .punto{width:16px; height:16px;}
+  .numerica input:checked + label .punto{box-shadow:inset 0 0 0 3px #fff;}
+  .numerica-extremos{font-size:13px;}
 }
 
 /* ══════════════════════ IMAGEN DEL TRIAL ══════════════════════
@@ -439,9 +452,11 @@ input[type=range]::-moz-range-thumb{
   background:var(--tarjeta); border:2px solid var(--tinta); box-shadow:0 1px 4px rgba(16,21,31,.2);}
 input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--tinta); outline-offset:2px;}
 .termo .extremos{
-  display:flex; justify-content:space-between;
-  font-size:11.5px; color:var(--tinta-suave); margin-top:-1px;
+  display:grid; grid-template-columns:1fr auto 1fr; gap:10px;
+  font-size:13px; color:var(--tinta-med); margin-top:1px;
 }
+.termo .extremos span:nth-child(2){text-align:center;}
+.termo .extremos span:last-child{text-align:right;}
 
 /* ══════════════════════ BOTONES ══════════════════════ */
 .acciones{
@@ -481,10 +496,6 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
 
 <header class="top">
   <div class="barra"><span id="barra"></span></div>
-  <div class="meta">
-    <span class="paso" id="meta-paso">Consentimiento</span>
-    <span id="meta-cont"></span>
-  </div>
 </header>
 
 <main>
@@ -496,37 +507,42 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
       <span>Encuesta sobre percepción de rostros</span>
       <span class="duracion">Tiempo aproximado · 5 min</span>
     </p>
-    <h1>¿Cómo te hacen sentir estas caras?</h1>
-    <p class="lead">Te vamos a mostrar una serie de fotografías de rostros y te vamos a pedir que indiques cómo te hace sentir cada una.</p>
+    <h1>Te invitamos a participar de este experimento.</h1>
+    <p class="lead">Sólo debés participar si deseás hacerlo. Antes de decidir tomar parte en él, por favor, leé cuidadosamente la siguiente información, y no dudes en contactarnos ante cualquier pregunta que te surja.</p>
+    <p>En este experimento te vamos a mostrar una serie de fotografías de rostros y te vamos a pedir que indiques cómo te hace sentir cada una.</p>
 
     <div class="regla"></div>
 
     <dl class="ficha">
       <div>
-        <dt>Anónima</dt>
-        <dd>No pedimos tu nombre, tu mail ni ningún dato que permita identificarte. Tampoco guardamos tu dirección IP.</dd>
+        <dt>Confidencial</dt>
+        <dd>Todos los datos que proveas serán confidenciales, anónimos y asegurados apropiadamente. Sólo los experimentadores involucrados en este proyecto tendrán acceso a ellos, y no serán usados para ningún otro propósito.</dd>
       </div>
       <div>
-        <dt>Académica</dt>
-        <dd>Los datos se usan con fines de investigación y se analizan siempre de forma agregada.</dd>
+        <dt>Agregada</dt>
+        <dd>No estamos buscando datos individuales sino patrones generales.</dd>
+      </div>
+      <div>
+        <dt>Sin riesgos</dt>
+        <dd>No hay riesgos ni beneficios anticipados asociados con la participación en este experimento.</dd>
       </div>
       <div>
         <dt>Voluntaria</dt>
-        <dd>Podés cerrar la pestaña cuando quieras. Nada de lo que hayas respondido hasta ahí se guarda.</dd>
-      </div>
-      <div>
-        <dt>Con política</dt>
-        <dd>Todas las caras que vas a ver son de figuras políticas argentinas, y vamos a preguntarte por tu orientación política.</dd>
-      </div>
-      <div>
-        <dt>Sin respuestas correctas</dt>
-        <dd>Nos interesa tu reacción personal, no lo que creas que deberían contestar los demás.</dd>
+        <dd>Tu participación es absolutamente voluntaria y te podés retirar del cuestionario en cualquier momento. Vas a responder un grupo de fotos y, al terminarlo, te vamos a preguntar si querés seguir con otro grupo distinto: podés parar cuando quieras.</dd>
       </div>
     </dl>
 
-    <p class="nota" style="margin-top:20px;" id="pie-lab"></p>
+    <p class="nota" style="margin-top:20px;" id="linea-mas-info">
+      <a class="enlace" id="link-mas-info" href="#" target="_blank" rel="noopener">Hacé click acá para ver más información.</a>
+    </p>
+
+    <p class="nota" id="pie-lab" style="margin-top:20px;">
+      Si tenés cualquier tipo de duda, podés escribirnos un mail a <a class="enlace" id="mail-consent" href="#">nuestro correo</a>. También podés contactarte con el Comité de Ética de la Investigación de la UTDT (CEI), Universidad Torcuato Di Tella, Ciudad de Buenos Aires (C1428DQK), República Argentina.
+    </p>
 
     <div class="regla"></div>
+
+    <p>Por favor, confirmá que deseás participar de este experimento. La información que ingreses se almacenará, y podría ser utilizada para investigación.</p>
 
     <label class="check">
       <input type="checkbox" id="chk-consent">
@@ -534,7 +550,7 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
     </label>
 
     <div class="acciones">
-      <div class="der"><button class="btn-primario" id="btn-consent" disabled>Empezar</button></div>
+      <div class="der"><button class="btn-primario" id="btn-consent" disabled>Confirmo que deseo participar</button></div>
     </div>
   </div>
 </section>
@@ -609,7 +625,6 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
     <h2>Cómo funciona la tarea</h2>
     <p>Vas a ver <strong id="n-total">20</strong> fotografías, una por vez, con tres preguntas debajo de cada una.</p>
     <p>Respondé con la primera impresión, sin pensarlo demasiado.</p>
-    <p>Al terminar te vamos a preguntar si querés seguir con otro grupo de fotos distinto. Podés parar cuando quieras.</p>
 
     <div class="acciones">
       <button class="btn-fantasma" data-atras="p-politica">Atrás</button>
@@ -665,7 +680,7 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
   <div class="tarjeta">
     <p class="eyebrow">Última pregunta</p>
     <h2>Sentimiento hacia cada figura</h2>
-    <p>Movés la barra de 0 a 100, donde <strong>0</strong> es un sentimiento muy negativo, <strong>100</strong> es muy positivo y <strong>50</strong> es indiferencia.</p>
+    <p>Movés la barra de 0 a 100, donde <strong>0</strong> es un sentimiento totalmente negativo, <strong>100</strong> es totalmente positivo y <strong>50</strong> es indiferencia.</p>
     <p class="nota" style="margin-bottom:34px;">Acá no importan las fotos: pensá en la persona.</p>
 
     <div id="termos"></div>
@@ -687,28 +702,30 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
   <div class="tarjeta">
     <p class="eyebrow">Listo</p>
     <h1>Gracias por participar.</h1>
-    <p class="lead">Tus respuestas quedaron guardadas de forma anónima.</p>
+
+    <!-- envío exitoso -->
+    <div id="fin-ok">
+      <p class="lead">Tus respuestas quedaron guardadas de forma anónima.</p>
+    </div>
+
+    <!-- el envío falló: la encuesta igual llega hasta acá, y desde acá se
+         puede reintentar o descargar el archivo con todo lo respondido -->
+    <div id="fin-fallo" style="display:none">
+      <p class="lead">Respondiste todo, pero no pudimos guardar tus respuestas en el servidor.</p>
+      <p>Suele ser un problema de conexión. Podés reintentar el envío o descargar el archivo con tus respuestas y mandárnoslo por mail a <strong id="mail-error"></strong>. Si cerrás la pestaña sin hacer ninguna de las dos cosas, esos datos se pierden.</p>
+      <div class="acciones">
+        <button class="btn-fantasma" id="btn-descargar">Descargar mis respuestas</button>
+        <div class="der"><button class="btn-primario" id="btn-reintentar">Reintentar envío</button></div>
+      </div>
+      <p class="mono" id="detalle-error" style="margin-top:14px;"></p>
+    </div>
+
     <div class="regla"></div>
     <p>Estamos estudiando la relación entre la política y las emociones. Si te interesa participar en la próxima etapa del experimento, podés escribirnos al mail de abajo.</p>
     <p>Compartiendo el link de la encuesta nos ayudás mucho.</p>
     <div class="regla"></div>
-    <p class="nota" id="pie-fin"></p>
+    <p class="nota" id="pie-fin" style="font-size:16.5px; color:var(--tinta);"></p>
     <p class="mono" id="cod-fin"></p>
-  </div>
-</section>
-
-<!-- ═══════════ ERROR DE ENVÍO ═══════════ -->
-<section class="pantalla" id="p-error">
-  <div class="tarjeta">
-    <p class="eyebrow">No pudimos guardar</p>
-    <h2>Hubo un problema al enviar</h2>
-    <p>Tus respuestas no llegaron al servidor. Suele ser un problema de conexión.</p>
-    <div class="acciones">
-      <button class="btn-fantasma" id="btn-descargar">Descargar mis respuestas</button>
-      <div class="der"><button class="btn-primario" id="btn-reintentar">Reintentar</button></div>
-    </div>
-    <p class="nota" style="margin-top:16px;">Si el reintento falla, descargá el archivo y mandalo a <span id="mail-error"></span>.</p>
-    <p class="mono" id="detalle-error"></p>
   </div>
 </section>
 
@@ -728,7 +745,9 @@ const S = {
   respuestas: [],            // respuestas del modelo EN CURSO
   termometro: {}, comentario: '',
   trials: [], i: 0, tTrial: 0, token: 0,
-  accionReintentar: null,
+  pendientes: [],            // lotes de valoraciones que no se pudieron postear
+  participanteOk: false,     // la fila-resumen ya se subió (no repetirla al reintentar)
+  ultimoError: null,
 };
 
 /* ══════════════════════ NO REPETIR MODELO (localStorage) ══════════════════════
@@ -749,7 +768,17 @@ function marcarModeloHechoLS(m){
 const $  = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-$('#pie-lab').textContent    = CONFIG.LAB + '. Consultas: ' + CONFIG.CONTACTO;
+const mailConsent = $('#mail-consent');
+mailConsent.textContent = CONFIG.CONTACTO;
+mailConsent.href        = 'mailto:' + CONFIG.CONTACTO;
+
+/* El enlace de "más información" sólo aparece si hay una URL cargada. */
+if (CONFIG.URL_MAS_INFO){
+  $('#link-mas-info').href = CONFIG.URL_MAS_INFO;
+} else {
+  $('#linea-mas-info').style.display = 'none';
+}
+
 $('#pie-fin').textContent    = CONFIG.LAB + ' · ' + CONFIG.CONTACTO;
 $('#mail-error').textContent = CONFIG.CONTACTO;
 
@@ -783,23 +812,9 @@ function mezclar(a){
   return c;
 }
 
-const ROTULOS = {
-  'p-consent':   'Consentimiento',
-  'p-demo':      'Paso 1 — Sobre vos',
-  'p-politica':  'Paso 2 — Política',
-  'p-instru':    'Paso 3 — La tarea',
-  'p-trial':     'Encuesta de rostros',
-  'p-continuar': 'Grupo completado',
-  'p-termo':     'Última pregunta',
-  'p-fin':       'Fin',
-  'p-error':     'Error',
-};
-
 function irA(id){
   $$('.pantalla').forEach(p => p.classList.remove('activa'));
   $('#' + id).classList.add('activa');
-  $('#meta-paso').textContent = ROTULOS[id] || '';
-  if (id !== 'p-trial') $('#meta-cont').textContent = '';
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 function progreso(pct){ $('#barra').style.width = Math.max(0, Math.min(100, pct)) + '%'; }
@@ -820,53 +835,78 @@ $$('[data-atras]').forEach(b => {
 const TEXTOS = {
   f: {
     partido:     '¿Con qué espacio político te sentís más identificada?',
-    q_arousal:   '¿Cuán activada te sentís al verla?',
+    q_arousal:   '¿Cuán activada o relajada te sentís al ver esta imagen?',
     ac_arousal:  'De sentirte totalmente en calma a sentirte alterada o con adrenalina.',
-    ar_izq:      'Muy relajada',
-    ar_der:      'Muy activada',
+    ar_izq:      'Totalmente relajada',
+    ar_medio:    'Moderada',
+    ar_der:      'Totalmente activada',
   },
   m: {
     partido:     '¿Con qué espacio político te sentís más identificado?',
-    q_arousal:   '¿Cuán activado te sentís al verla?',
+    q_arousal:   '¿Cuán activado o relajado te sentís al ver esta imagen?',
     ac_arousal:  'De sentirte totalmente en calma a sentirte alterado o con adrenalina.',
-    ar_izq:      'Muy relajado',
-    ar_der:      'Muy activado',
+    ar_izq:      'Totalmente relajado',
+    ar_medio:    'Moderado',
+    ar_der:      'Totalmente activado',
   },
   x: {
     partido:     '¿Con qué espacio político te identificás más?',
-    q_arousal:   '¿Cuánta activación sentís al ver la imagen?',
+    q_arousal:   '¿Cuánta activación sentís al ver esta imagen?',
     ac_arousal:  'De estar totalmente en calma a estar con mucha adrenalina.',
-    ar_izq:      'Nada de activación',
-    ar_der:      'Mucha activación',
+    ar_izq:      'Ninguna activación',
+    ar_medio:    'Activación moderada',
+    ar_der:      'Totalmente activado',
   },
 };
+
 const T = () => S.demo.genero === 'mujer' ? TEXTOS.f
               : S.demo.genero === 'varon' ? TEXTOS.m
               : TEXTOS.x;
 
-/* ══════════════════════ ESCALA DE 7 CÍRCULOS ══════════════════════
-   Sin color: la intensidad se codifica sólo con tamaño y con una rampa
-   de grises. El color queda reservado para los espacios políticos.   */
-const TAM  = [54, 44, 34, 24, 34, 44, 54];
-const GRIS = ['var(--g1)','var(--g2)','var(--g3)','var(--g4)','var(--g3)','var(--g2)','var(--g1)'];
-
-function escala(opts){
+/* ══════════════════════ ENCABEZADO DE PREGUNTA ══════════════════════ */
+function encabezado(opts){
   const wrap = document.createElement('div');
-  wrap.innerHTML = '<p class="enunciado">' + opts.enunciado + '</p>' +
-                   (opts.aclaracion ? '<p class="aclaracion">' + opts.aclaracion + '</p>' : '');
+  const h = document.createElement('p');
+  h.className = 'enunciado'; h.textContent = opts.enunciado;
+  wrap.appendChild(h);
+  if (opts.aclaracion){
+    const a = document.createElement('p');
+    a.className = 'aclaracion'; a.textContent = opts.aclaracion;
+    wrap.appendChild(a);
+  }
+  return wrap;
+}
 
-  const esc = document.createElement('div');
-  esc.className = 'escala';
+/* ══════════════════════ ESCALA NUMÉRICA 0–10 ══════════════════════
+   Formato clásico de autoubicación ideológica: los números son la
+   escala y sólo los extremos llevan etiqueta verbal.                 */
+function escalaNumerica(opts){
+  const min  = opts.min !== undefined ? opts.min : 0;
+  const max  = opts.max !== undefined ? opts.max : 10;
+  const puntoMedio = (min + max) / 2;
 
-  const pIzq = document.createElement('div');
-  pIzq.className = 'polo izq'; pIzq.textContent = opts.izq;
+  /* Con leyenda:true los anclajes verbales se explican en el subtítulo
+     ("1 = totalmente desagradable, 4 = ...") en vez de ir debajo de los
+     números, que es donde se apretaban en pantallas chicas.            */
+  if (opts.leyenda){
+    const baja  = (t) => t.charAt(0).toLowerCase() + t.slice(1);
+    const items = [min + ' = ' + baja(opts.izq)];
+    if (opts.medio) items.push(puntoMedio + ' = ' + baja(opts.medio));
+    items.push(max + ' = ' + baja(opts.der));
+    opts = Object.assign({}, opts, {
+      aclaracion: (opts.aclaracion ? opts.aclaracion + ' ' : '') + items.join(', ') + '.',
+    });
+  }
+
+  const wrap = encabezado(opts);
 
   const fila = document.createElement('div');
-  fila.className = 'circulos';
+  fila.className = 'numerica';
   fila.setAttribute('role', 'radiogroup');
   fila.setAttribute('aria-label', opts.enunciado);
+  fila.style.gridTemplateColumns = 'repeat(' + (max - min + 1) + ',1fr)';
 
-  for (let v = 1; v <= 7; v++){
+  for (let v = min; v <= max; v++){
     const id  = opts.nombre + '_' + v;
     const inp = document.createElement('input');
     inp.type = 'radio'; inp.name = opts.nombre; inp.id = id; inp.value = v;
@@ -874,34 +914,49 @@ function escala(opts){
 
     const lab = document.createElement('label');
     lab.setAttribute('for', id);
-    lab.style.setProperty('--d', TAM[v-1] + 'px');
-    lab.style.setProperty('--c', GRIS[v-1]);
-    lab.setAttribute('aria-label', v + ' de 7 — ' + (v < 4 ? opts.izq : v > 4 ? opts.der : 'punto medio'));
+    const nota = v === min ? ' — ' + opts.izq
+               : v === max ? ' — ' + opts.der
+               : (opts.medio && v === puntoMedio) ? ' — ' + opts.medio : '';
+    lab.setAttribute('aria-label', v + nota);
+    lab.innerHTML = '<span class="num"></span><span class="punto"></span>';
+    lab.querySelector('.num').textContent = v;
 
     inp.addEventListener('change', () => opts.onChange && opts.onChange(v));
-    fila.appendChild(inp); fila.appendChild(lab);
+    fila.append(inp, lab);
   }
 
-  const pDer = document.createElement('div');
-  pDer.className = 'polo der'; pDer.textContent = opts.der;
+  if (opts.leyenda){        // los anclajes ya están en el subtítulo
+    wrap.appendChild(fila);
+    return wrap;
+  }
 
-  esc.append(pIzq, fila, pDer);
+  /* Los anclajes verbales van debajo: siempre los dos extremos y, si la
+     escala tiene punto medio impar, opcionalmente el neutro del centro. */
+  const extremos = document.createElement('div');
+  extremos.className = 'numerica-extremos' + (opts.medio ? ' con-medio' : '');
+  extremos.innerHTML = opts.medio
+    ? '<span></span><span></span><span></span>'
+    : '<span></span><span></span>';
+  extremos.children[0].textContent = min + ' · ' + opts.izq;
+  if (opts.medio) extremos.children[1].textContent = puntoMedio + ' · ' + opts.medio;
+  extremos.children[extremos.children.length - 1].textContent = max + ' · ' + opts.der;
 
-  const movil = document.createElement('div');
-  movil.className = 'polos-movil';
-  movil.innerHTML = '<span>' + opts.izq + '</span><span>' + opts.der + '</span>';
-
-  wrap.append(esc, movil);
+  wrap.append(fila, extremos);
   return wrap;
 }
+
 const valorDe = (n) => {
   const s = document.querySelector('input[name="' + n + '"]:checked');
   return s ? Number(s.value) : null;
 };
 
-/* ══════════════════════ 1. CONSENTIMIENTO ══════════════════════ */
-$('#chk-consent').addEventListener('change', e => { $('#btn-consent').disabled = !e.target.checked; });
-$('#btn-consent').addEventListener('click', () => { progreso(8); irA('p-demo'); });
+/* ══════════════════════ 1. CONSENTIMIENTO ══════════════════════
+   Si el navegador ya completó los 3 modelos, la tarjeta se reemplazó
+   por el mensaje de agradecimiento y estos controles no existen.     */
+if ($('#chk-consent')){
+  $('#chk-consent').addEventListener('change', e => { $('#btn-consent').disabled = !e.target.checked; });
+  $('#btn-consent').addEventListener('click', () => { progreso(8); irA('p-demo'); });
+}
 
 /* ══════════════════════ 2. DEMOGRÁFICOS ══════════════════════ */
 [
@@ -936,18 +991,18 @@ function renderPolitica(){
   $('#rot-partido').textContent = T().partido;
 
   $('#q-ideologia').innerHTML = '';
-  $('#q-ideologia').appendChild(escala({
+  $('#q-ideologia').appendChild(escalaNumerica({
     nombre:'ideologia',
-    enunciado:'En política se habla de izquierda y derecha. ¿Dónde te ubicarías?',
+    enunciado:'En política se suele hablar de izquierda y derecha. ¿Dónde te ubicarías?',
     aclaracion:'Si el eje no te representa del todo, elegí lo que más se acerque.',
-    izq:'Izquierda', der:'Derecha', valor: ideo,
+    min:0, max:10, izq:'Izquierda', der:'Derecha', valor: ideo,
   }));
 
   $('#q-interes').innerHTML = '';
-  $('#q-interes').appendChild(escala({
+  $('#q-interes').appendChild(escalaNumerica({
     nombre:'interes',
     enunciado:'¿Cuánto interés tenés en la política?',
-    izq:'Ninguno', der:'Muchísimo', valor: inte,
+    min:0, max:10, izq:'Ningún interés', der:'Extremo interés', valor: inte,
   }));
 }
 renderPolitica();
@@ -966,7 +1021,11 @@ ORDEN_PARTIDOS.forEach(p => {
 $('#btn-politica').addEventListener('click', async () => {
   const ideo = valorDe('ideologia'), inte = valorDe('interes');
   const par  = document.querySelector('input[name="partido"]:checked');
-  if (!ideo || !inte || !par){ $('#av-politica').textContent = 'Te falta responder alguna de las tres preguntas.'; return; }
+  // OJO: la ideología ahora va de 0 a 10, así que 0 es una respuesta válida
+  // y no se puede chequear con !ideo.
+  if (ideo === null || inte === null || !par){
+    $('#av-politica').textContent = 'Te falta responder alguna de las tres preguntas.'; return;
+  }
   $('#av-politica').textContent = '';
   S.politica = {
     ideologia: ideo, interes_politico: inte, partido: par.value,
@@ -1086,7 +1145,6 @@ function pintarTrial(est, previo){
   S.token++;
 
   $('#trial-eyebrow').textContent = 'Imagen ' + (S.i + 1) + ' de ' + S.trials.length;
-  $('#meta-cont').textContent = (S.i + 1) + ' / ' + S.trials.length;
   progreso(28 + (S.i / S.trials.length) * 64);
 
   // al cambiar de imagen, volver arriba: si no, la foto queda fuera de pantalla
@@ -1105,27 +1163,31 @@ function pintarTrial(est, previo){
   marco.appendChild(img);
 
   const chequear = () => {
-    const listo = valorDe('valencia') && valorDe('arousal') &&
+    const listo = valorDe('valencia') !== null && valorDe('arousal') !== null &&
                   document.querySelector('input[name="expresion"]:checked');
     $('#btn-trial').disabled = !listo;
   };
 
   $('#q-valencia').innerHTML = '';
-  $('#q-valencia').appendChild(escala({
+  $('#q-valencia').appendChild(escalaNumerica({
     nombre:'valencia',
-    enunciado:'¿Cómo te resulta esta imagen?',
-    aclaracion:'Primera reacción al ver la imagen.',
-    izq:'Muy desagradable', der:'Muy agradable',
+    enunciado:'¿Cuán agradable o desagradable te resulta esta imagen?',
+    aclaracion:'Respondé con tu primera reacción al verla.',
+    min:1, max:7,
+    izq:'Totalmente desagradable', der:'Totalmente agradable',
+    medio:'Ni agradable ni desagradable', leyenda:true,
     valor: previo ? previo.valencia : null,
     onChange: chequear,
   }));
 
   $('#q-arousal').innerHTML = '';
-  $('#q-arousal').appendChild(escala({
+  $('#q-arousal').appendChild(escalaNumerica({
     nombre:'arousal',
     enunciado: T().q_arousal,
     aclaracion: T().ac_arousal,
+    min:1, max:7,
     izq: T().ar_izq, der: T().ar_der,
+    medio: T().ar_medio, leyenda:true,
     valor: previo ? previo.arousal : null,
     onChange: chequear,
   }));
@@ -1173,7 +1235,6 @@ function siguienteTrial(){
   S.i++;
 
   if (S.i >= S.trials.length){
-    $('#meta-cont').textContent = '';
     $('#btn-trial').disabled = true;
     $('#btn-trial').textContent = 'Guardando…';
     finalizarModelo();
@@ -1194,20 +1255,26 @@ $('#btn-trial-atras').addEventListener('click', trialAtras);
 /* ══════════════════════ FIN DE UN MODELO ══════════════════════
    Postea a Supabase las 20 (o N_PRUEBA) valoraciones del modelo recién
    terminado, lo marca como hecho en localStorage, y decide si ofrece
-   seguir con otro modelo o pasar directo al termómetro.                  */
+   seguir con otro modelo o pasar directo al termómetro.
+   Si el POST falla NO se corta la encuesta: el lote queda en
+   S.pendientes y se reintenta junto con el envío final, donde además
+   se ofrece descargar el archivo.                                       */
 async function finalizarModelo(){
   const lote = S.respuestas.filter(Boolean);
-  S.accionReintentar = finalizarModelo;
-  try {
-    if (lote.length) await postear('valoraciones', lote);
-  } catch(err){
-    console.error(err);
-    $('#detalle-error').textContent = String(err.message || err);
-    irA('p-error');
-    return;
+
+  // el respaldo de descarga se arma siempre, se haya podido postear o no
+  S.todasLasValoraciones = S.todasLasValoraciones.concat(lote);
+
+  if (lote.length){
+    try {
+      await postear('valoraciones', lote);
+    } catch(err){
+      console.error(err);
+      S.ultimoError = err;
+      S.pendientes = S.pendientes.concat(lote);
+    }
   }
 
-  S.todasLasValoraciones = S.todasLasValoraciones.concat(lote);
   marcarModeloHechoLS(S.modeloActual);
   if (!S.modelosCompletados.includes(S.modeloActual)) S.modelosCompletados.push(S.modeloActual);
   S.respuestas = [];
@@ -1253,7 +1320,7 @@ mezclar(POLITICOS).forEach((nombre, k) => {
     '<div class="fila"><span class="nombre">' + nombre + '</span>' +
     '<span class="valor" id="' + id + '_v">sin responder</span></div>' +
     '<input type="range" id="' + id + '" min="0" max="100" value="50" step="1" aria-label="Sentimiento hacia ' + nombre + '">' +
-    '<div class="extremos"><span>0 · muy negativo</span><span>50</span><span>100 · muy positivo</span></div>';
+    '<div class="extremos"><span>0 · totalmente negativo</span><span>50</span><span>100 · totalmente positivo</span></div>';
   $('#termos').appendChild(div);
 
   const inp = div.querySelector('input'), out = div.querySelector('#' + id + '_v');
@@ -1317,31 +1384,66 @@ function paqueteParticipante(){
   };
 }
 
+/* Intenta subir lo que falte: primero los lotes de valoraciones que
+   quedaron pendientes por un error de red, después la fila-resumen del
+   participante (sólo si todavía no se subió, para no duplicarla).
+   Devuelve true si no quedó nada sin enviar.                            */
+async function intentarEnvio(){
+  let ok = true;
+
+  if (S.pendientes.length){
+    try {
+      await postear('valoraciones', S.pendientes);
+      S.pendientes = [];
+    } catch(err){ console.error(err); S.ultimoError = err; ok = false; }
+  }
+
+  if (!S.participanteOk){
+    try {
+      await postear('participantes', paqueteParticipante());
+      S.participanteOk = true;
+    } catch(err){ console.error(err); S.ultimoError = err; ok = false; }
+  }
+
+  return ok;
+}
+
+/* La pantalla de cierre siempre se muestra: cambia el bloque de arriba
+   según si quedó algo sin guardar.                                      */
+function mostrarCierre(ok){
+  $('#fin-ok').style.display    = ok ? '' : 'none';
+  $('#fin-fallo').style.display = ok ? 'none' : '';
+  $('#detalle-error').textContent = ok ? '' : String(S.ultimoError && (S.ultimoError.message || S.ultimoError) || '');
+  $('#cod-fin').textContent = 'ID de sesión: ' + S.sesion;
+  progreso(100);
+  irA('p-fin');
+}
+
 async function enviar(){
   const btn = $('#btn-termo');
   btn.disabled = true; btn.textContent = 'Enviando…';
-  S.accionReintentar = enviar;
-  try {
-    await postear('participantes', paqueteParticipante());
-    progreso(100);
-    $('#cod-fin').textContent = 'ID de sesión: ' + S.sesion;
-    irA('p-fin');
-  } catch (err){
-    console.error(err);
-    $('#detalle-error').textContent = String(err.message || err);
-    irA('p-error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Enviar respuestas';
-  }
+  const ok = await intentarEnvio();
+  btn.disabled = false; btn.textContent = 'Enviar respuestas';
+  mostrarCierre(ok);
 }
 
-$('#btn-reintentar').addEventListener('click', () => {
-  if (S.accionReintentar) S.accionReintentar();
+$('#btn-reintentar').addEventListener('click', async () => {
+  const btn = $('#btn-reintentar');
+  btn.disabled = true; btn.textContent = 'Reintentando…';
+  const ok = await intentarEnvio();
+  btn.disabled = false; btn.textContent = 'Reintentar envío';
+  mostrarCierre(ok);
 });
+
 $('#btn-descargar').addEventListener('click', () => {
   const datos = {
     participante: paqueteParticipante(),
     valoraciones: S.todasLasValoraciones.concat(S.respuestas.filter(Boolean)),
+    sin_subir: {
+      valoraciones_pendientes: S.pendientes.length,
+      participante_pendiente: !S.participanteOk,
+      ultimo_error: String(S.ultimoError && (S.ultimoError.message || S.ultimoError) || ''),
+    },
   };
   const blob = new Blob([JSON.stringify(datos, null, 2)], { type:'application/json' });
   const a = document.createElement('a');
@@ -1352,7 +1454,10 @@ $('#btn-descargar').addEventListener('click', () => {
 
 window.addEventListener('beforeunload', (e) => {
   const enCurso = !$('#p-consent').classList.contains('activa') && !$('#p-fin').classList.contains('activa');
-  if (enCurso && S.respuestas.filter(Boolean).length > 0){ e.preventDefault(); e.returnValue = ''; }
+  const enCursoConDatos = enCurso && S.respuestas.filter(Boolean).length > 0;
+  // también avisa en la pantalla de cierre si quedó algo sin subir
+  const sinGuardar = S.pendientes.length > 0 || (!S.participanteOk && S.todasLasValoraciones.length > 0);
+  if (enCursoConDatos || sinGuardar){ e.preventDefault(); e.returnValue = ''; }
 });
 </script>
 </body>
