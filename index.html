@@ -43,6 +43,9 @@ const CONFIG = {
   LAB:      'Laboratorio de Neurociencia de la UTDT',
   CONTACTO: 'labo6y7ditella@gmail.com',
 
+  /* ---- Link público de la encuesta (botón "Compartir encuesta") -------- */
+  URL_ENCUESTA: 'https://labo6y7.github.io/encuesta-politicos/',
+
   /* ---- "Hacé click acá para ver más información" ------------------------
      URL del texto ampliado de consentimiento (PDF, Drive, página del labo).
      Si queda vacío ('') el enlace no se muestra.                          */
@@ -493,6 +496,8 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
 
 .aviso{font-size:13.5px; color:#9B3232; margin-top:14px; min-height:0;}
 .aviso:empty{margin-top:0;}
+.aviso.ok{color:var(--tinta-med);}
+.aviso.ok .link{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--tinta); word-break:break-all;}
 .mono{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--tinta-suave); word-break:break-all;}
 </style>
 </head>
@@ -729,6 +734,10 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
     <div class="regla"></div>
     <p>Estamos estudiando la relación entre la política y las emociones. Si te interesa participar en la próxima etapa del experimento, podés escribirnos al mail de abajo.</p>
     <p>Compartiendo el link de la encuesta nos ayudás mucho.</p>
+    <div style="margin-top:18px;">
+      <button class="btn-primario" id="btn-compartir">Compartir encuesta</button>
+    </div>
+    <div class="aviso ok" id="av-compartir"></div>
     <div class="regla"></div>
     <p class="nota" id="pie-fin" style="font-size:16.5px; color:var(--tinta);"></p>
     <p class="mono" id="cod-fin"></p>
@@ -1448,6 +1457,37 @@ $('#btn-reintentar').addEventListener('click', async () => {
   const ok = await intentarEnvio();
   btn.disabled = false; btn.textContent = 'Reintentar envío';
   mostrarCierre(ok);
+});
+
+/* ══════════════════════ COMPARTIR ══════════════════════
+   navigator.share abre el menú nativo del sistema, pero sólo existe en
+   móviles y en algunos navegadores de escritorio, y exige HTTPS. Si no
+   está, se copia el link al portapapeles; si eso tampoco se puede, se
+   muestra el link para copiarlo a mano.                                */
+$('#btn-compartir').addEventListener('click', async () => {
+  const aviso = $('#av-compartir');
+  const datos = {
+    title: 'Encuesta sobre percepción de rostros',
+    text:  '¿Cómo te hacen sentir estas caras? Encuesta anónima del Laboratorio de Neurociencia de la UTDT.',
+    url:   CONFIG.URL_ENCUESTA,
+  };
+
+  if (navigator.share){
+    try { await navigator.share(datos); aviso.textContent = ''; return; }
+    catch(err){
+      if (err && err.name === 'AbortError') return;   // el usuario cerró el menú
+      console.error(err);                              // sigue al respaldo
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(CONFIG.URL_ENCUESTA);
+    aviso.textContent = 'Link copiado al portapapeles.';
+  } catch(err){
+    console.error(err);
+    aviso.innerHTML = 'Copiá el link a mano: <span class="link"></span>';
+    aviso.querySelector('.link').textContent = CONFIG.URL_ENCUESTA;
+  }
 });
 
 $('#btn-descargar').addEventListener('click', () => {
