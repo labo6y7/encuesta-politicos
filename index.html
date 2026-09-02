@@ -302,6 +302,12 @@ strong{font-weight:600; color:var(--tinta);}
 .pregunta:last-child{margin-bottom:0;}
 .enunciado{font-size:16.5px; font-weight:500; color:var(--tinta); margin:0 0 4px;}
 .aclaracion{font-size:15px; color:var(--tinta-sub); margin:0 0 18px; line-height:1.5;}
+.aclaracion.con-leyenda{margin-bottom:8px;}
+
+/* Anclajes de la escala, uno por línea */
+.leyenda{margin:0 0 18px; font-size:15px; color:var(--tinta-sub); line-height:1.5;}
+.leyenda div{display:flex; gap:8px;}
+.leyenda .n{font-family:'IBM Plex Mono',monospace; font-size:14px; min-width:26px; padding-top:1px;}
 
 /* ══════════════════════ ESCALA NUMÉRICA ══════════════════════
    Formato único de todas las escalas de la encuesta: números arriba,
@@ -871,7 +877,8 @@ function encabezado(opts){
   wrap.appendChild(h);
   if (opts.aclaracion){
     const a = document.createElement('p');
-    a.className = 'aclaracion'; a.textContent = opts.aclaracion;
+    a.className = 'aclaracion' + (opts.leyenda ? ' con-leyenda' : '');
+    a.textContent = opts.aclaracion;
     wrap.appendChild(a);
   }
   return wrap;
@@ -885,20 +892,28 @@ function escalaNumerica(opts){
   const max  = opts.max !== undefined ? opts.max : 10;
   const puntoMedio = (min + max) / 2;
 
-  /* Con leyenda:true los anclajes verbales se explican en el subtítulo
-     ("1 = totalmente desagradable, 4 = ...") en vez de ir debajo de los
-     números, que es donde se apretaban en pantallas chicas.            */
+  const wrap = encabezado(opts);
+
+  /* Con leyenda:true los anclajes verbales se explican arriba de la
+     escala, uno por línea, en vez de ir apretados debajo de cada
+     número, que era donde se pisaban en pantallas chicas.             */
   if (opts.leyenda){
     const baja  = (t) => t.charAt(0).toLowerCase() + t.slice(1);
-    const items = [min + ' = ' + baja(opts.izq)];
-    if (opts.medio) items.push(puntoMedio + ' = ' + baja(opts.medio));
-    items.push(max + ' = ' + baja(opts.der));
-    opts = Object.assign({}, opts, {
-      aclaracion: (opts.aclaracion ? opts.aclaracion + ' ' : '') + items.join(', ') + '.',
-    });
-  }
+    const items = [[min, opts.izq]];
+    if (opts.medio) items.push([puntoMedio, opts.medio]);
+    items.push([max, opts.der]);
 
-  const wrap = encabezado(opts);
+    const ley = document.createElement('div');
+    ley.className = 'leyenda';
+    items.forEach(([n, txt]) => {
+      const linea = document.createElement('div');
+      linea.innerHTML = '<span class="n"></span><span class="t"></span>';
+      linea.querySelector('.n').textContent = n + ' =';
+      linea.querySelector('.t').textContent = baja(txt);
+      ley.appendChild(linea);
+    });
+    wrap.appendChild(ley);
+  }
 
   const fila = document.createElement('div');
   fila.className = 'numerica';
@@ -995,7 +1010,7 @@ function renderPolitica(){
     nombre:'ideologia',
     enunciado:'En política se suele hablar de izquierda y derecha. ¿Dónde te ubicarías?',
     aclaracion:'Si el eje no te representa del todo, elegí lo que más se acerque.',
-    min:0, max:10, izq:'Izquierda', der:'Derecha', valor: ideo,
+    min:0, max:10, izq:'Extrema izquierda', der:'Extrema derecha', valor: ideo,
   }));
 
   $('#q-interes').innerHTML = '';
