@@ -527,11 +527,11 @@ button:focus-visible{outline:2px solid var(--tinta); outline-offset:3px;}
     <dl class="ficha">
       <div>
         <dt>Confidencial</dt>
-        <dd>Todos los datos que proveas serán confidenciales, anónimos y asegurados apropiadamente. Sólo los experimentadores involucrados en este proyecto tendrán acceso a ellos, y no serán usados para ningún otro propósito.</dd>
+        <dd>Todos los datos que proveas serán confidenciales, anónimos y asegurados apropiadamente. Sólo los experimentadores involucrados en este proyecto tendrán acceso a ellos, y sólo serán usados con fines académicos y de investigación.</dd>
       </div>
       <div>
-        <dt>Agregada</dt>
-        <dd>No estamos buscando datos individuales sino patrones generales.</dd>
+        <dt>Impersonal</dt>
+        <dd>Analizamos patrones generales, sin identificaciones individuales.</dd>
       </div>
       <div>
         <dt>Sin riesgos</dt>
@@ -851,7 +851,7 @@ const TEXTOS = {
   f: {
     partido:     '¿Con qué espacio político te sentís más identificada?',
     q_arousal:   '¿Cuán activada o relajada te sentís al ver esta imagen?',
-    ac_arousal:  'De sentirte totalmente en calma a sentirte alterada o con adrenalina.',
+    ac_arousal:  'De sentirte totalmente en calma a sentirte completamente alterada o completamente nerviosa.',
     ar_izq:      'Totalmente relajada',
     ar_medio:    'Moderada',
     ar_der:      'Totalmente activada',
@@ -859,18 +859,22 @@ const TEXTOS = {
   m: {
     partido:     '¿Con qué espacio político te sentís más identificado?',
     q_arousal:   '¿Cuán activado o relajado te sentís al ver esta imagen?',
-    ac_arousal:  'De sentirte totalmente en calma a sentirte alterado o con adrenalina.',
+    ac_arousal:  'De sentirte totalmente en calma a sentirte completamente alterado o completamente nervioso.',
     ar_izq:      'Totalmente relajado',
     ar_medio:    'Moderado',
     ar_der:      'Totalmente activado',
   },
+  /* Variante sin marca de género: todo se reformula con sustantivos
+     (activación, alteración, nervios, calma) en vez de adjetivos, para
+     no usar ni el masculino ni el femenino. El contenido es el mismo
+     que en las otras dos variantes.                                    */
   x: {
     partido:     '¿Con qué espacio político te identificás más?',
-    q_arousal:   '¿Cuánta activación sentís al ver esta imagen?',
-    ac_arousal:  'De estar totalmente en calma a estar con mucha adrenalina.',
-    ar_izq:      'Ninguna activación',
+    q_arousal:   '¿Cuánta activación o calma sentís al ver esta imagen?',
+    ac_arousal:  'De sentir una calma total a sentir una alteración o un nerviosismo completos.',
+    ar_izq:      'Calma total',
     ar_medio:    'Activación moderada',
-    ar_der:      'Totalmente activado',
+    ar_der:      'Activación total',
   },
 };
 
