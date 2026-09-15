@@ -113,7 +113,7 @@ Almacena 1 fila por sesión/participante completado.
 | `user_agent` | String | Cadena User-Agent del navegador. |
 
 ### Tabla B: `valoraciones` (Nivel Ensayos / Trial)
-Almacena $N$ filas por participante (donde $N = \text{n\_trials}$, típicamente 20, 40 o 60 filas por sujeto).
+Almacena $N$ filas por participante (donde $N = n\_trials$, típicamente 20, 40 o 60 filas por sujeto).
 
 | Columna | Tipo de Dato | Descripción / Valores |
 | :--- | :--- | :--- |
