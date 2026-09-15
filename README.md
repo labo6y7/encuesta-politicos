@@ -1,1 +1,0 @@
-# enucuesta-politicos
